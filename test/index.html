@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+
+<head>
+    <meta name="viewport" content="width=device-width,maximum-scale=1,initial-scale=1,user-scalable=0"/>
+
+    <style>
+        body { -webkit-user-select: none }
+        .test { border: 2px solid #000 }
+        #id1 { width: 150px; height: 150px; float: left }
+        #id2 { width: 150px; height: 150px; margin-left: 150px }
+        #id3 { width: 100px; height: 100px }
+        #id4 { width: 50px; height: 50px }
+    </style>
+</head>
+
+<body>
+    <div class="test" id="id1">
+        1
+    </div>
+    <div class="test" id="id2">
+        2
+        <div class="test" id="id3">
+            3
+            <div class="test" id="id4">
+                4
+            </div>
+        </div>
+    </div>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="../src/jquery-pointerevents.js"></script>
+    <script>
+        (function($) {
+
+            function log(e, ctx) {
+                console.log(ctx.id + ': ' + e.type);
+            }
+
+            $('.test').bind({
+                pointerenter: function(e) { log(e, this) },
+                pointerover: function(e) { log(e, this) },
+                pointerdown: function(e) { log(e, this) },
+                pointermove: function(e) { log(e, this) },
+                pointerup: function(e) { log(e, this) },
+                pointerout: function(e) { log(e, this) },
+                pointerleave: function(e) { log(e, this) },
+                pointercancel: function(e) { log(e, this) }
+            });
+
+        })(jQuery);
+    </script>
+</body>
