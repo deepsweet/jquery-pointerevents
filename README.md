@@ -6,7 +6,7 @@ Basic polyfill for [Pointer Events W3C Specitication](https://dvcs.w3.org/hg/poi
 
 ![PointerEvents](http://funkyimg.com/i/DWrJ.png)
 
-Polyfill is trying to dynamically wrap all the possible `mouse*`, `touch*` and `MSPointer*` events to provide a single `PointerEvent` Interface. [Read more](https://dvcs.w3.org/hg/pointerevents/raw-file/tip/pointerEvents.html#pointer-events-and-interfaces).
+Polyfill is trying to dynamically wrap all the possible `mouse*`, `touch*` and `MSPointer*` events to provide a single `PointerEvent` Interface. [Read more](https://dvcs.w3.org/hg/pointerevents/raw-file/tip/pointerEvents.html#intro).
 
 ### why?
 
