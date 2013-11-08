@@ -1,4 +1,4 @@
-## jQuery PointerEvents ![build status](https://travis-ci.org/deepsweet/jquery-pointerevents.png)
+## jQuery PointerEvents [![Build Status](https://secure.travis-ci.org/deepsweet/jquery-pointerevents.png)](https://travis-ci.org/deepsweet/jquery-pointerevents)
 
 Basic polyfill for [Pointer Events W3C Specitication](https://dvcs.w3.org/hg/pointerevents/raw-file/tip/pointerEvents.html) using [jQuery special events API](http://www.benalman.com/news/2010/03/jquery-special-events/).
 
