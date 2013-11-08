@@ -229,7 +229,6 @@
                     pointerevent.dispatch(pointerevent.currentTarget);
                 },
 
-                // msPointer -> mouse
                 msPointerHandler: function(e) {
                     pointerevent = new PointerEvent(e, eventName);
                     pointerevent.dispatch(pointerevent.currentTarget);
