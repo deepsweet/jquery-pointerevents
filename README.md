@@ -21,7 +21,7 @@ Because there are too many different events types on different platforms with di
     $('body').on({
         pointerdown: function(e) { console.log(e); },
         pointerup: function(e) { console.log(e); },
-        …
+        // …
     });
 </script>
 ```
@@ -51,6 +51,15 @@ Because there are too many different events types on different platforms with di
 ### cross-browser compatibility
 
 Depends on your jQuery version – [jquery.com/browser-support](http://jquery.com/browser-support/).
+
+Also, [caniuse.com/#feat=pointer](http://caniuse.com/#feat=pointer):
+
+```javascript
+// nothing to do in IE11 for today
+if(win.navigator.pointerEnabled) {
+    return;
+}
+```
 
 ### test
 
