@@ -172,6 +172,12 @@
 
     };
 
+    /**
+     * Create new $.event.special wrapper with some default behavior.
+     *
+     * @param {string} type event type
+     * @param {object} toExtend object to extend default wrapper
+     */
     function addPointerEvent(type, toExtend) {
 
         var eventName = 'pointer' + type,
