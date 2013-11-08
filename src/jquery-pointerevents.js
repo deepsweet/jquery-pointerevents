@@ -69,7 +69,6 @@
     function normalizeTouchEvent(e) {
 
         if(e.originalEvent.changedTouches) {
-            // console.log(e.originalEvent.changedTouches.length);
             // multitouch
             if(e.originalEvent.targetTouches.length > 1) {
                 e.multitouch = true;
@@ -164,7 +163,6 @@
      */
     PointerEvent.prototype.dispatch = function(target) {
 
-        // console.log(this.multitouch);
         // do not fire event if it is a multitouch
         if(!this.multitouch) {
             ($.event.handle || $.event.dispatch).call(target, this);
