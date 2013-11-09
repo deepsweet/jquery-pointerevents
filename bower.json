@@ -10,10 +10,10 @@
   "ignore": [
     ".*",
     "package.json",
-    "src/"
+    "src/",
     "node_modules/",
     "bower_components/",
     "test/",
-    "tmp/",
+    "tmp/"
   ]
 }
