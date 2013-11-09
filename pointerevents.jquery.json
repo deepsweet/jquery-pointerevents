@@ -1,6 +1,6 @@
 {
   "name": "pointerevents",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "title": "jQuery PointerEvents",
   "description": "Basic polyfill for Pointer Events W3C Specification",
   "keywords": [ "pointer", "events", "pointerevents", "polyfill" ],
