@@ -4,7 +4,7 @@
  * @author Kir Belevich <kir@soulshine.in>
  * @copyright Kir Belevich 2013
  * @license MIT
- * @version 0.3.0
+ * @version 0.3.1
  */
 (function(win, $) {
 

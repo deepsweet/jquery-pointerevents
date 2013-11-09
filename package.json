@@ -1,6 +1,6 @@
 {
   "name": "jquery-pointerevents",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Basic polyfill for Pointer Events W3C Specification",
   "keywords": [ "jquery", "pointerevents", "polyfill" ],
   "homepage": "https://github.com/deepsweet/jquery-pointerevents",
@@ -15,12 +15,7 @@
     "uglify-js": ""
   },
   "scripts": {
-    "test": "npm run-script eslint && npm run-script jscs",
-    "dist": "npm run-script strip && npm run-script min",
-    "jscs": "jscs src/",
-    "eslint": "eslint src/",
-    "min": "uglifyjs src/jquery-pointerevents.js -c -m -o jquery-pointerevents.min.js --source-map jquery-pointerevents.js.map",
-    "strip": "uglifyjs src/jquery-pointerevents.js -b indent-level=4 -o jquery-pointerevents.js"
+    "test": "make test"
   },
   "licenses": [{
       "type": "MIT",
