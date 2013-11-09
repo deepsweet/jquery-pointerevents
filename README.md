@@ -14,9 +14,9 @@ Because there are too many different events types on different platforms with di
 
 ### how?
 
+`bower i jquery-pointerevents`
+
 ```html
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-<script src="jquery-pointerevents.js"></script>
 <script>
     $('body').on({
         pointerdown: function(e) { console.log(e); },
@@ -69,7 +69,6 @@ Open `test/index.html` in your browser(s) and look at console output.
 
 * [Polymer / PointerEvents](https://github.com/Polymer/PointerEvents)
 * [HandJS](https://handjs.codeplex.com/)
-
 
 ### license
 
