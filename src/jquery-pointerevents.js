@@ -4,7 +4,7 @@
  * @author Kir Belevich <kir@soulshine.in>
  * @copyright Kir Belevich 2013
  * @license MIT
- * @version 0.2.0
+ * @version 0.3.0
  */
 (function(win, $) {
 
@@ -229,6 +229,7 @@
                     pointerevent.dispatch(pointerevent.currentTarget);
                 },
 
+                // mspointer
                 msPointerHandler: function(e) {
                     pointerevent = new PointerEvent(e, eventName);
                     pointerevent.dispatch(pointerevent.currentTarget);
@@ -340,6 +341,7 @@
 
     }
 
+    // init pointer events
     addPointerEvent('enter');
     addPointerEvent('over');
     addPointerEvent('down');
@@ -348,5 +350,8 @@
     addPointerEvent('out', extendTouchHandlerWithTarget);
     addPointerEvent('leave', extendTouchHandlerWithTarget);
     addPointerEvent('cancel');
+
+    // export PointerEvent class
+    $.PointerEvent = PointerEvent;
 
 })(window, jQuery);
