@@ -260,7 +260,7 @@
             touchHandler: function(e) {
                 eventSpecial._processed = true;
 
-                e.pointerType = 'touch';
+                e.pointerType = 2;
 
                 var pointerevent = new PointerEvent(e, eventName),
                     target = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY);
@@ -309,6 +309,8 @@
             },
 
             touchHandler: function(e) {
+                e.pointerType = 2;
+
                 var pointerevent = new PointerEvent(e, eventName),
                     newTarget = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY),
                     currentTarget = eventSpecial._target;
