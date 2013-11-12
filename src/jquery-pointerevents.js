@@ -20,11 +20,6 @@
        http://api.jquery.com/category/events/event-object/
     */
 
-    // nothing to do in IE11 for today
-    if(win.navigator.pointerEnabled) {
-        return;
-    }
-
     var doc = win.document,
         binds = {
             mouse: {
@@ -171,6 +166,14 @@
         return this;
 
     };
+
+    // export PointerEvent class
+    $.PointerEvent = PointerEvent;
+
+    // nothing to do in IE11 for today
+    if(win.navigator.pointerEnabled) {
+        return;
+    }
 
     /**
      * Create new $.event.special wrapper with some default behavior.
@@ -350,8 +353,5 @@
     addPointerEvent('out', extendTouchHandlerWithTarget);
     addPointerEvent('leave', extendTouchHandlerWithTarget);
     addPointerEvent('cancel');
-
-    // export PointerEvent class
-    $.PointerEvent = PointerEvent;
 
 })(window, jQuery);
