@@ -63,7 +63,10 @@
      */
     function normalizeTouchEvent(e) {
 
-        if(e.originalEvent.changedTouches) {
+        if(e.pointerType === 'touch') {
+
+            e.originalEvent = e.originalEvent || e;
+
             // multitouch
             if(e.originalEvent.targetTouches.length > 1) {
                 e.multitouch = true;
