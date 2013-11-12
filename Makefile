@@ -26,7 +26,7 @@ min:
 dist: strip min
 
 version:
-	@sed -i '' 's/\("version":\) ".*"/\1 "$(v)"/' \
+	@sed -i '' 's/\("version": \)".*"/\1"$(v)"/' \
 		bower.json \
 		package.json \
 		pointerevents.jquery.json
