@@ -1,6 +1,6 @@
 {
   "name": "jquery-pointerevents",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Basic polyfill for Pointer Events W3C Specification",
   "keywords": [ "jquery", "pointerevents", "polyfill" ],
   "homepage": "https://github.com/deepsweet/jquery-pointerevents",
