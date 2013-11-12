@@ -1,13 +1,10 @@
 /*!
- * jQuery PointerEvents v0.3.1
+ * jQuery PointerEvents v0.3.3
  * https://github.com/deepsweet/jquery-pointerevents/
  * copyright 2013 Kir Belevich <kir@soulshine.in>
  */
 (function(win, $) {
     "use strict";
-    if (win.navigator.pointerEnabled) {
-        return;
-    }
     var doc = win.document, binds = {
         mouse: {
             enter: "mouseenter",
@@ -95,6 +92,10 @@
         }
         return this;
     };
+    $.PointerEvent = PointerEvent;
+    if (win.navigator.pointerEnabled) {
+        return;
+    }
     function addPointerEvent(type, toExtend) {
         var eventName = "pointer" + type, pointerevent, eventSpecial = $.event.special[eventName] = {
             _processed: false,
@@ -133,7 +134,7 @@
         return {
             touchHandler: function(e) {
                 eventSpecial._processed = true;
-                e.pointerType = "touch";
+                e.pointerType = 2;
                 var pointerevent = new PointerEvent(e, eventName), target = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY);
                 if (e.currentTarget.contains(target)) {
                     target = e.currentTarget;
@@ -155,6 +156,7 @@
                 eventSpecial._target = e.originalEvent.changedTouches[0].target;
             },
             touchHandler: function(e) {
+                e.pointerType = 2;
                 var pointerevent = new PointerEvent(e, eventName), newTarget = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY), currentTarget = eventSpecial._target;
                 pointerevent.dispatch(currentTarget);
                 if (currentTarget !== newTarget) {
@@ -183,5 +185,4 @@
     addPointerEvent("out", extendTouchHandlerWithTarget);
     addPointerEvent("leave", extendTouchHandlerWithTarget);
     addPointerEvent("cancel");
-    $.PointerEvent = PointerEvent;
 })(window, jQuery);
