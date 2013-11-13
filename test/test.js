@@ -139,6 +139,7 @@ describe('touch:', function() {
 
         var spy = sinon.spy(),
             e = $.Event('touchstart', {
+                touches: [],
                 targetTouches: [fakeTouchObj],
                 changedTouches: [fakeTouchObj]
             }),
@@ -154,6 +155,7 @@ describe('touch:', function() {
 
         var spy = sinon.spy(),
             e = $.Event('touchstart', {
+                touches: [],
                 targetTouches: [fakeTouchObj],
                 changedTouches: [fakeTouchObj]
             }),
@@ -169,6 +171,7 @@ describe('touch:', function() {
 
         var spy = sinon.spy(),
             e = $.Event('touchstart', {
+                touches: [],
                 targetTouches: [fakeTouchObj],
                 changedTouches: [fakeTouchObj]
             }),
@@ -192,6 +195,7 @@ describe('mixed sources:', function() {
                 clientY: 200
             },
             e = $.Event('touchstart', {
+                touches: [],
                 targetTouches: [fakeTouchObj],
                 changedTouches: [fakeTouchObj]
             }),
@@ -221,6 +225,7 @@ describe('mixed sources:', function() {
                 clientY: 400
             },
             touchEvent = $.Event('touchstart', {
+                touches: [],
                 targetTouches: [fakeTouchObj],
                 changedTouches: [fakeTouchObj]
             }),

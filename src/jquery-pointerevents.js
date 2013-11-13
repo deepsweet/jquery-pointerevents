@@ -68,7 +68,7 @@
             e.originalEvent = e.originalEvent || e;
 
             // multitouch
-            if(e.originalEvent.targetTouches.length > 1) {
+            if(e.originalEvent.touches.length > 1) {
                 e.multitouch = true;
                 return;
             }
