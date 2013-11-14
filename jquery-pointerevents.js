@@ -1,5 +1,5 @@
 /*!
- * jQuery PointerEvents v0.3.3
+ * jQuery PointerEvents v0.3.4
  * https://github.com/deepsweet/jquery-pointerevents/
  * copyright 2013 Kir Belevich <kir@soulshine.in>
  */
@@ -35,8 +35,9 @@
         }
     };
     function normalizeTouchEvent(e) {
-        if (e.originalEvent && e.originalEvent.changedTouches) {
-            if (e.originalEvent.targetTouches.length > 1) {
+        if (e.pointerType === "touch") {
+            e.originalEvent = e.originalEvent || e;
+            if (e.originalEvent.touches.length > 1) {
                 e.multitouch = true;
                 return;
             }
@@ -158,7 +159,7 @@
             touchHandler: function(e) {
                 e.pointerType = 2;
                 var pointerevent = new PointerEvent(e, eventName), newTarget = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY), currentTarget = eventSpecial._target;
-                pointerevent.dispatch(currentTarget);
+                pointerevent.dispatch(e.currentTarget);
                 if (currentTarget !== newTarget) {
                     pointerevent = new PointerEvent(e, "pointerout");
                     pointerevent.dispatch(currentTarget);
