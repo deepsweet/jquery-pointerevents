@@ -318,7 +318,7 @@
                     newTarget = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY),
                     currentTarget = eventSpecial._target;
 
-                pointerevent.dispatch(currentTarget);
+                pointerevent.dispatch(e.currentTarget);
 
                 if(currentTarget !== newTarget) {
                     // out current target
