@@ -63,9 +63,12 @@
      */
     function normalizeTouchEvent(e) {
 
-        if(e.originalEvent.changedTouches) {
+        if(e.pointerType === 'touch') {
+
+            e.originalEvent = e.originalEvent || e;
+
             // multitouch
-            if(e.originalEvent.targetTouches.length > 1) {
+            if(e.originalEvent.touches.length > 1) {
                 e.multitouch = true;
                 return;
             }
@@ -315,7 +318,7 @@
                     newTarget = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY),
                     currentTarget = eventSpecial._target;
 
-                pointerevent.dispatch(currentTarget);
+                pointerevent.dispatch(e.currentTarget);
 
                 if(currentTarget !== newTarget) {
                     // out current target

@@ -1,5 +1,5 @@
 BIN = ./node_modules/.bin
-FILE = 'jquery-pointerevents'
+SCRIPT = 'jquery-pointerevents'
 HEADER = "`cat src/header.js`"
 
 eslint:
@@ -8,20 +8,23 @@ eslint:
 jscs:
 	@$(BIN)/jscs src/
 
-test: eslint jscs
+mocha:
+	@$(BIN)/mocha-phantomjs test/test.html
+
+test: eslint jscs mocha
 
 strip:
-	@$(BIN)/uglifyjs src/$(FILE).js \
+	@$(BIN)/uglifyjs src/$(SCRIPT).js \
 		-b indent-level=4 \
-		-o $(FILE).js \
+		-o $(SCRIPT).js \
 		--preamble $(HEADER)
 
 min:
-	@$(BIN)/uglifyjs src/$(FILE).js \
+	@$(BIN)/uglifyjs src/$(SCRIPT).js \
 		-c -m \
 		--preamble $(HEADER) \
-		--source-map $(FILE).min.js.map \
-		-o $(FILE).min.js
+		--source-map $(SCRIPT).min.js.map \
+		-o $(SCRIPT).min.js
 
 dist: strip min
 
@@ -34,4 +37,4 @@ version:
 	@sed -i '' 's/\(@version\).*/\1 $(v)/' src/jquery-pointerevents.js
 	@sed -i '' 's/ v.*/ v$(v)/' src/header.js
 
-.PHONY: eslint jscs test min strip dist version
+.PHONY: eslint jscs test coverage min strip dist version
