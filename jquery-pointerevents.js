@@ -1,5 +1,5 @@
 /*!
- * jQuery PointerEvents v0.3.4
+ * jQuery PointerEvents v0.3.5
  * https://github.com/deepsweet/jquery-pointerevents/
  * copyright 2013 Kir Belevich <kir@soulshine.in>
  */
@@ -158,22 +158,24 @@
             },
             touchHandler: function(e) {
                 e.pointerType = 2;
-                var pointerevent = new PointerEvent(e, eventName), newTarget = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY), currentTarget = eventSpecial._target;
-                pointerevent.dispatch(e.currentTarget);
-                if (currentTarget !== newTarget) {
+                var pointerevent = new PointerEvent(e, eventName), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY), currentTarget = eventSpecial._target;
+                if (e.currentTarget.contains(targetFromPoint)) {
+                    pointerevent.dispatch(e.currentTarget);
+                }
+                if (currentTarget !== targetFromPoint) {
                     pointerevent = new PointerEvent(e, "pointerout");
                     pointerevent.dispatch(currentTarget);
-                    if (!currentTarget.contains(newTarget)) {
+                    if (!currentTarget.contains(targetFromPoint)) {
                         pointerevent = new PointerEvent(e, "pointerleave");
                         pointerevent.dispatch(currentTarget);
                     }
-                    if (!newTarget.contains(currentTarget)) {
+                    if (!targetFromPoint.contains(currentTarget)) {
                         pointerevent = new PointerEvent(e, "pointerenter");
-                        pointerevent.dispatch(newTarget);
+                        pointerevent.dispatch(targetFromPoint);
                     }
                     pointerevent = new PointerEvent(e, "pointerover");
-                    pointerevent.dispatch(newTarget);
-                    eventSpecial._target = newTarget;
+                    pointerevent.dispatch(targetFromPoint);
+                    eventSpecial._target = targetFromPoint;
                 }
             }
         };

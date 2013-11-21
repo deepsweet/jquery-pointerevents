@@ -4,7 +4,7 @@
  * @author Kir Belevich <kir@soulshine.in>
  * @copyright Kir Belevich 2013
  * @license MIT
- * @version 0.3.4
+ * @version 0.3.5
  */
 (function(win, $) {
 
@@ -315,35 +315,40 @@
                 e.pointerType = 2;
 
                 var pointerevent = new PointerEvent(e, eventName),
-                    newTarget = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY),
+                    targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY),
                     currentTarget = eventSpecial._target;
 
-                pointerevent.dispatch(e.currentTarget);
+                // trigger pointermove only if currentTarget contains targetFromPoint
+                if(e.currentTarget.contains(targetFromPoint)) {
+                    pointerevent.dispatch(e.currentTarget);
+                }
 
-                if(currentTarget !== newTarget) {
-                    // out current target
+                // new target
+                if(currentTarget !== targetFromPoint) {
+                    // out currentTarget
                     pointerevent = new PointerEvent(e, 'pointerout');
                     pointerevent.dispatch(currentTarget);
 
-                    // new target is not a child of the current -> leave current target
-                    if(!currentTarget.contains(newTarget)) {
+                    // new target is not a child of the current -> leave currentTarget
+                    if(!currentTarget.contains(targetFromPoint)) {
                         pointerevent = new PointerEvent(e, 'pointerleave');
                         pointerevent.dispatch(currentTarget);
                     }
 
-                    // new target is not the parent of the current -> leave new target
-                    if(!newTarget.contains(currentTarget)) {
+                    // new target is not the parent of the current -> leave targetFromPoint
+                    if(!targetFromPoint.contains(currentTarget)) {
                         pointerevent = new PointerEvent(e, 'pointerenter');
-                        pointerevent.dispatch(newTarget);
+                        pointerevent.dispatch(targetFromPoint);
                     }
 
-                    // over new target
+                    // over targetFromPoint
                     pointerevent = new PointerEvent(e, 'pointerover');
-                    pointerevent.dispatch(newTarget);
+                    pointerevent.dispatch(targetFromPoint);
 
-                    // new target -> current target
-                    eventSpecial._target = newTarget;
+                    // targetFromPoint -> currentTarget
+                    eventSpecial._target = targetFromPoint;
                 }
+
             }
         }
 
