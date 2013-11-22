@@ -4,7 +4,7 @@
  * @author Kir Belevich <kir@soulshine.in>
  * @copyright Kir Belevich 2013
  * @license MIT
- * @version 0.3.5
+ * @version 0.3.6
  */
 (function(win, $) {
 
@@ -128,7 +128,7 @@
             case 2: e.pointerType = 'touch'; break;
             case 3: e.pointerType = 'pen'; break;
             case 4: e.pointerType = 'mouse'; break;
-            default: e.pointerType = 'unknown';
+            default: e.pointerType = e.pointerType;
         }
 
         e.isPrimary = true;

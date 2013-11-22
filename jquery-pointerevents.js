@@ -1,5 +1,5 @@
 /*!
- * jQuery PointerEvents v0.3.5
+ * jQuery PointerEvents v0.3.6
  * https://github.com/deepsweet/jquery-pointerevents/
  * copyright 2013 Kir Belevich <kir@soulshine.in>
  */
@@ -76,7 +76,7 @@
             break;
 
           default:
-            e.pointerType = "unknown";
+            e.pointerType = e.pointerType;
         }
         e.isPrimary = true;
         e.pointerId = e.identifier ? e.identifier + 2 : 1;
