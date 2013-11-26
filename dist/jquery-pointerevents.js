@@ -1,5 +1,5 @@
 /*!
- * jQuery PointerEvents v0.3.6
+ * jQuery PointerEvents v0.4.0
  * https://github.com/deepsweet/jquery-pointerevents/
  * copyright 2013 Kir Belevich <kir@soulshine.in>
  */
@@ -50,9 +50,8 @@
             e.screenY = touchPoint.screenY;
             e.layerX = e.originalEvent.layerX;
             e.layerY = e.originalEvent.layerY;
-            e.offsetX = e.layerX - e.currentTarget.offsetLeft;
-            e.offsetY = e.layerY - e.currentTarget.offsetTop;
-            e.target = touchPoint.target;
+            e.offsetX = e.layerX - e.target.offsetLeft;
+            e.offsetY = e.layerY - e.target.offsetTop;
             e.identifier = touchPoint.identifier;
         }
     }
@@ -87,12 +86,6 @@
         e.type = type;
         $.extend(this, e);
     }
-    PointerEvent.prototype.dispatch = function(target) {
-        if (!this.multitouch) {
-            ($.event.handle || $.event.dispatch).call(target, this);
-        }
-        return this;
-    };
     $.PointerEvent = PointerEvent;
     if (win.navigator.pointerEnabled) {
         return;
@@ -107,24 +100,34 @@
                 $(this).off(binds.mouse[type], eventSpecial.mouseHandler).off(binds.touch[type], eventSpecial.touchHandler).off(binds.mspointer[type], eventSpecial.msPointerHandler);
             },
             mouseHandler: function(e) {
+                if (e.target !== e.currentTarget) {
+                    return;
+                }
                 if (eventSpecial._processed === false) {
                     e.pointerType = 4;
                     pointerevent = new PointerEvent(e, eventName);
-                    pointerevent.dispatch(pointerevent.currentTarget);
+                    $(e.target).trigger(pointerevent);
                 }
                 setTimeout(function() {
                     eventSpecial._processed = false;
                 }, 0);
             },
             touchHandler: function(e) {
+                if (e.target !== e.currentTarget) {
+                    return;
+                }
                 eventSpecial._processed = true;
                 e.pointerType = 2;
                 pointerevent = new PointerEvent(e, eventName);
-                pointerevent.dispatch(pointerevent.currentTarget);
+                $(e.target).trigger(pointerevent);
             },
             msPointerHandler: function(e) {
+                if (e.target !== e.currentTarget) {
+                    return;
+                }
+                eventSpecial._processed = true;
                 pointerevent = new PointerEvent(e, eventName);
-                pointerevent.dispatch(pointerevent.currentTarget);
+                $(e.target).trigger(pointerevent);
             }
         };
         if (toExtend) {
@@ -134,13 +137,13 @@
     function extendTouchHandlerWithTarget(eventSpecial, eventName) {
         return {
             touchHandler: function(e) {
+                if (e.target !== e.currentTarget) {
+                    return;
+                }
                 eventSpecial._processed = true;
                 e.pointerType = 2;
-                var pointerevent = new PointerEvent(e, eventName), target = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY);
-                if (e.currentTarget.contains(target)) {
-                    target = e.currentTarget;
-                }
-                pointerevent.dispatch(target);
+                var pointerevent = new PointerEvent(e, eventName), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY);
+                $(targetFromPoint).trigger(pointerevent);
             }
         };
     }
@@ -154,27 +157,30 @@
             },
             touchDownHandler: function(e) {
                 eventSpecial._processed = true;
-                eventSpecial._target = e.originalEvent.changedTouches[0].target;
+                eventSpecial._target = e.target;
             },
             touchHandler: function(e) {
-                e.pointerType = 2;
-                var pointerevent = new PointerEvent(e, eventName), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY), currentTarget = eventSpecial._target;
-                if (e.currentTarget.contains(targetFromPoint)) {
-                    pointerevent.dispatch(e.currentTarget);
+                if (e.target !== e.currentTarget) {
+                    return;
                 }
-                if (currentTarget !== targetFromPoint) {
+                e.pointerType = 2;
+                var pointerevent = new PointerEvent(e, eventName), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY), target = eventSpecial._target;
+                $(targetFromPoint).trigger(pointerevent);
+                if (target !== targetFromPoint) {
                     pointerevent = new PointerEvent(e, "pointerout");
-                    pointerevent.dispatch(currentTarget);
-                    if (!currentTarget.contains(targetFromPoint)) {
-                        pointerevent = new PointerEvent(e, "pointerleave");
-                        pointerevent.dispatch(currentTarget);
+                    $(target).trigger(pointerevent);
+                    pointerevent = new PointerEvent(e, "pointerleave");
+                    if (targetFromPoint.contains(target)) {
+                        $(target).triggerHandler(pointerevent);
+                    } else {
+                        $(target).trigger(pointerevent);
                     }
-                    if (!targetFromPoint.contains(currentTarget)) {
+                    if (!targetFromPoint.contains(target)) {
                         pointerevent = new PointerEvent(e, "pointerenter");
-                        pointerevent.dispatch(targetFromPoint);
+                        $(targetFromPoint).trigger(pointerevent);
                     }
                     pointerevent = new PointerEvent(e, "pointerover");
-                    pointerevent.dispatch(targetFromPoint);
+                    $(targetFromPoint).trigger(pointerevent);
                     eventSpecial._target = targetFromPoint;
                 }
             }

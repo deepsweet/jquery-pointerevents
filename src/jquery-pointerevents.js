@@ -4,7 +4,7 @@
  * @author Kir Belevich <kir@soulshine.in>
  * @copyright Kir Belevich 2013
  * @license MIT
- * @version 0.3.6
+ * @version 0.4.0
  */
 (function(win, $) {
 
@@ -84,9 +84,8 @@
             e.screenY = touchPoint.screenY;
             e.layerX = e.originalEvent.layerX;
             e.layerY = e.originalEvent.layerY;
-            e.offsetX = e.layerX - e.currentTarget.offsetLeft;
-            e.offsetY = e.layerY - e.currentTarget.offsetTop;
-            e.target = touchPoint.target;
+            e.offsetX = e.layerX - e.target.offsetLeft;
+            e.offsetY = e.layerY - e.target.offsetTop;
             e.identifier = touchPoint.identifier;
         }
 
@@ -154,22 +153,6 @@
 
     }
 
-    /**
-     * Dispatch current event.
-     *
-     * @param {element} target target element
-     */
-    PointerEvent.prototype.dispatch = function(target) {
-
-        // do not fire event if it is a multitouch
-        if(!this.multitouch) {
-            ($.event.handle || $.event.dispatch).call(target, this);
-        }
-
-        return this;
-
-    };
-
     // export PointerEvent class
     $.PointerEvent = PointerEvent;
 
@@ -211,12 +194,16 @@
 
                 // mouse
                 mouseHandler: function(e) {
+
+                    // ignore all handler calls due to bubbling
+                    if(e.target !== e.currentTarget) { return; }
+
                     // do not duplicate PointerEvent if
                     // touch/mspointer is already processed
                     if(eventSpecial._processed === false) {
                         e.pointerType = 4;
                         pointerevent = new PointerEvent(e, eventName);
-                        pointerevent.dispatch(pointerevent.currentTarget);
+                        $(e.target).trigger(pointerevent);
                     }
 
                     // clear the "processed" key right after
@@ -228,17 +215,28 @@
 
                 // touch
                 touchHandler: function(e) {
+                    // ignore all handler calls due to bubbling
+                    if(e.target !== e.currentTarget){ return; }
+
+                    // stop mouse events handling
                     eventSpecial._processed = true;
 
                     e.pointerType = 2;
                     pointerevent = new PointerEvent(e, eventName);
-                    pointerevent.dispatch(pointerevent.currentTarget);
+
+                    $(e.target).trigger(pointerevent);
                 },
 
                 // mspointer
                 msPointerHandler: function(e) {
+                    // ignore all handler calls due to bubbling
+                    if(e.target !== e.currentTarget){ return; }
+
+                    // stop mouse events handling
+                    eventSpecial._processed = true;
+
                     pointerevent = new PointerEvent(e, eventName);
-                    pointerevent.dispatch(pointerevent.currentTarget);
+                    $(e.target).trigger(pointerevent);
                 }
             };
 
@@ -261,19 +259,18 @@
 
         return {
             touchHandler: function(e) {
+                // ignore all handler calls due to bubbling
+                if(e.target !== e.currentTarget) { return; }
+
+                // stop mouse events handling
                 eventSpecial._processed = true;
 
                 e.pointerType = 2;
 
                 var pointerevent = new PointerEvent(e, eventName),
-                    target = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY);
+                    targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY);
 
-                // if bubbling – switch target to parent
-                if(e.currentTarget.contains(target)) {
-                    target = e.currentTarget;
-                }
-
-                pointerevent.dispatch(target);
+                $(targetFromPoint).trigger(pointerevent);
             }
         }
 
@@ -307,48 +304,51 @@
             },
 
             touchDownHandler: function(e) {
+                // stop mouse events handling
                 eventSpecial._processed = true;
-                eventSpecial._target = e.originalEvent.changedTouches[0].target;
+                eventSpecial._target = e.target;
             },
 
             touchHandler: function(e) {
+                // ignore all handler calls due to bubbling
+                if(e.target !== e.currentTarget) { return; }
+
                 e.pointerType = 2;
 
                 var pointerevent = new PointerEvent(e, eventName),
                     targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY),
-                    currentTarget = eventSpecial._target;
+                    target = eventSpecial._target;
 
-                // trigger pointermove only if currentTarget contains targetFromPoint
-                if(e.currentTarget.contains(targetFromPoint)) {
-                    pointerevent.dispatch(e.currentTarget);
-                }
+                $(targetFromPoint).trigger(pointerevent);
 
                 // new target
-                if(currentTarget !== targetFromPoint) {
-                    // out currentTarget
+                if(target !== targetFromPoint) {
+                    // out target
                     pointerevent = new PointerEvent(e, 'pointerout');
-                    pointerevent.dispatch(currentTarget);
+                    $(target).trigger(pointerevent);
 
-                    // new target is not a child of the current -> leave currentTarget
-                    if(!currentTarget.contains(targetFromPoint)) {
-                        pointerevent = new PointerEvent(e, 'pointerleave');
-                        pointerevent.dispatch(currentTarget);
+                    pointerevent = new PointerEvent(e, 'pointerleave');
+                    // leave to parent
+                    if(targetFromPoint.contains(target)) {
+                        $(target).triggerHandler(pointerevent);
+                    // leave!
+                    } else {
+                        $(target).trigger(pointerevent);
                     }
 
                     // new target is not the parent of the current -> leave targetFromPoint
-                    if(!targetFromPoint.contains(currentTarget)) {
+                    if(!targetFromPoint.contains(target)) {
                         pointerevent = new PointerEvent(e, 'pointerenter');
-                        pointerevent.dispatch(targetFromPoint);
+                        $(targetFromPoint).trigger(pointerevent);
                     }
 
                     // over targetFromPoint
                     pointerevent = new PointerEvent(e, 'pointerover');
-                    pointerevent.dispatch(targetFromPoint);
+                    $(targetFromPoint).trigger(pointerevent);
 
-                    // targetFromPoint -> currentTarget
+                    // targetFromPoint -> target
                     eventSpecial._target = targetFromPoint;
                 }
-
             }
         }
 

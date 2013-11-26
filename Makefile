@@ -1,5 +1,6 @@
 BIN = ./node_modules/.bin
 SCRIPT = 'jquery-pointerevents'
+DIST = 'dist'
 HEADER = "`cat src/header.js`"
 
 eslint:
@@ -16,15 +17,15 @@ test: eslint jscs mocha
 strip:
 	@$(BIN)/uglifyjs src/$(SCRIPT).js \
 		-b indent-level=4 \
-		-o $(SCRIPT).js \
+		-o $(DIST)/$(SCRIPT).js \
 		--preamble $(HEADER)
 
 min:
 	@$(BIN)/uglifyjs src/$(SCRIPT).js \
 		-c -m \
 		--preamble $(HEADER) \
-		--source-map $(SCRIPT).min.js.map \
-		-o $(SCRIPT).min.js
+		--source-map $(DIST)/$(SCRIPT).min.js.map \
+		-o $(DIST)/$(SCRIPT).min.js
 
 dist: strip min
 
