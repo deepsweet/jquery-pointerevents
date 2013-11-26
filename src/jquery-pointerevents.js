@@ -6,9 +6,22 @@
  * @license MIT
  * @version 0.4.0
  */
-(function(win, $) {
+ (function(factory) {
 
-    /*global jQuery:true*/
+    /*global define*/
+    'use strict';
+
+    // AMD
+    if(typeof define === 'function' && define.amd) {
+        define([ 'jquery' ], factory);
+    // browser globals
+    } else {
+        factory(jQuery);
+    }
+
+ }(function($) {
+
+    /*global jQuery*/
     'use strict';
 
     /*
@@ -20,7 +33,8 @@
        http://api.jquery.com/category/events/event-object/
     */
 
-    var doc = win.document,
+    var win = window,
+        doc = win.document,
         binds = {
             mouse: {
                 enter: 'mouseenter',
@@ -364,4 +378,4 @@
     addPointerEvent('leave', extendTouchHandlerWithTarget);
     addPointerEvent('cancel');
 
-})(window, jQuery);
+ }));
