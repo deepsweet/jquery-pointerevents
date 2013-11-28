@@ -14,9 +14,13 @@ Because there are too many different events types on different platforms with di
 
 ### how?
 
-`bower i jquery-pointerevents`
+```sh
+$ bower install --save jquery-pointerevents
+```
 
 ```html
+<!-- load jQuery and plugin as browser globals or with RequireJS/AMD -->
+
 <script>
     $('body').on({
         pointerdown: function(e) { console.log(e); },
@@ -63,7 +67,8 @@ if(win.navigator.pointerEnabled) {
 
 ### test
 
-Open `test/index.html` in your browser(s) and look at console output.
+* open `test/index.html` in your browser(s), do something and look at console output
+* `npm test`
 
 ### alternatives
 
