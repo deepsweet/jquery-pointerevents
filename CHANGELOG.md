@@ -1,3 +1,12 @@
+### 0.5.0 / 28.11.2013
+* large code refactoring
+* isolate all the events from pointermove bind
+* fix trigger/bubbling order of events
+* fix mouse events bubbling in some cases
+* test: `-ms-touch-action: none` for IE10
+* AMDify
+* update `README`
+
 ### 0.4.0 / 26.11.2013
 * fix all the known problems with events bubbling on `touch*`
 * fix `msPointer*` events duplicates

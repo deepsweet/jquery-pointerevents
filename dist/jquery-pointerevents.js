@@ -1,11 +1,18 @@
 /*!
- * jQuery PointerEvents v0.4.0
+ * jQuery PointerEvents v0.5.0
  * https://github.com/deepsweet/jquery-pointerevents/
  * copyright 2013 Kir Belevich <kir@soulshine.in>
  */
-(function(win, $) {
+(function(factory) {
     "use strict";
-    var doc = win.document, binds = {
+    if (typeof define === "function" && define.amd) {
+        define([ "jquery" ], factory);
+    } else {
+        factory(jQuery);
+    }
+})(function($) {
+    "use strict";
+    var win = window, doc = win.document, binds = {
         mouse: {
             enter: "mouseenter",
             over: "mouseover",
@@ -94,10 +101,10 @@
         var eventName = "pointer" + type, pointerevent, eventSpecial = $.event.special[eventName] = {
             _processed: false,
             setup: function() {
-                $(this).on(binds.mouse[type], eventSpecial.mouseHandler).on(binds.touch[type], eventSpecial.touchHandler).on(binds.mspointer[type], eventSpecial.msPointerHandler);
+                $(this).on(binds.mouse[type], eventSpecial.mouseHandler).on(binds.touch[type], eventSpecial.touchHandler).on(binds.mspointer[type], eventSpecial.msHandler);
             },
             teardown: function() {
-                $(this).off(binds.mouse[type], eventSpecial.mouseHandler).off(binds.touch[type], eventSpecial.touchHandler).off(binds.mspointer[type], eventSpecial.msPointerHandler);
+                $(this).off(binds.mouse[type], eventSpecial.mouseHandler).off(binds.touch[type], eventSpecial.touchHandler).off(binds.mspointer[type], eventSpecial.msHandler);
             },
             mouseHandler: function(e) {
                 if (e.target !== e.currentTarget) {
@@ -121,7 +128,7 @@
                 pointerevent = new PointerEvent(e, eventName);
                 $(e.target).trigger(pointerevent);
             },
-            msPointerHandler: function(e) {
+            msHandler: function(e) {
                 if (e.target !== e.currentTarget) {
                     return;
                 }
@@ -131,67 +138,154 @@
             }
         };
         if (toExtend) {
-            $.extend(eventSpecial, toExtend(eventSpecial, eventName, type));
+            $.extend(eventSpecial, toExtend({
+                event: eventSpecial,
+                name: eventName,
+                type: type
+            }));
         }
     }
-    function extendTouchHandlerWithTarget(eventSpecial, eventName) {
+    function touchmoveBased(params) {
+        var event = params.event, type = params.type;
+        return {
+            setup: function() {
+                $(this).on(binds.mouse[type], event.mouseHandler).on(binds.touch[type], event.touchHandler).on(binds.touch.down, event.touchDownHandler).on(binds.mspointer[type], event.msHandler);
+                if (type !== "move") {
+                    $(this).on(binds.touch.move, event.touchMoveHandler);
+                }
+            },
+            teardown: function() {
+                $(this).off(binds.mouse[type], event.mouseHandler).off(binds.touch[type], event.touchHandler).off(binds.touch.down, event.touchDownHandler).off(binds.mspointer[type], event.msHandler);
+                if (type !== "move") {
+                    $(this).off(binds.touch.move, event.touchMoveHandler);
+                }
+            },
+            touchDownHandler: function(e) {
+                event._processed = true;
+                event._target = e.target;
+            }
+        };
+    }
+    function extendToEnter(params) {
+        return $.extend(touchmoveBased(params), {
+            touchMoveHandler: function(e) {
+                if (e.target !== e.currentTarget) {
+                    return;
+                }
+                e.pointerType = 2;
+                var pointerevent = new PointerEvent(e, params.name), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY), target = params.event._target;
+                if (target !== targetFromPoint) {
+                    if (target.contains(targetFromPoint)) {
+                        $(targetFromPoint).triggerHandler(pointerevent);
+                    } else if (!targetFromPoint.contains(target)) {
+                        $(targetFromPoint).trigger(pointerevent);
+                    }
+                    params.event._target = targetFromPoint;
+                }
+            },
+            mouseHandler: function(e) {
+                if (e.target !== e.currentTarget) {
+                    return;
+                }
+                var pointerevent = new PointerEvent(e, params.name);
+                if (!e.relatedTarget) {
+                    $(e.target).trigger(pointerevent);
+                    return;
+                }
+                if (e.relatedTarget.contains(e.target)) {
+                    $(e.target).triggerHandler(pointerevent);
+                } else if (!e.target.contains(e.relatedTarget)) {
+                    $(e.target).trigger(pointerevent);
+                }
+            }
+        });
+    }
+    function extendToOver(params) {
+        return $.extend(touchmoveBased(params), {
+            touchMoveHandler: function(e) {
+                if (e.target !== e.currentTarget) {
+                    return;
+                }
+                e.pointerType = 2;
+                var pointerevent = new PointerEvent(e, params.name), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY), target = params.event._target;
+                if (target !== targetFromPoint) {
+                    $(targetFromPoint).trigger(pointerevent);
+                    params.event._target = targetFromPoint;
+                }
+            }
+        });
+    }
+    function extendWithTargetFromPoint(params) {
         return {
             touchHandler: function(e) {
                 if (e.target !== e.currentTarget) {
                     return;
                 }
-                eventSpecial._processed = true;
+                params.event._processed = true;
                 e.pointerType = 2;
-                var pointerevent = new PointerEvent(e, eventName), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY);
+                var pointerevent = new PointerEvent(e, params.name), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY);
                 $(targetFromPoint).trigger(pointerevent);
             }
         };
     }
-    function extendTouchMove(eventSpecial, eventName, type) {
-        return {
-            setup: function() {
-                $(this).on(binds.mouse[type], eventSpecial.mouseHandler).on(binds.touch[type], eventSpecial.touchHandler).on(binds.touch.down, eventSpecial.touchDownHandler).on(binds.mspointer[type], eventSpecial.msPointerHandler);
-            },
-            teardown: function() {
-                $(this).off(binds.mouse[type], eventSpecial.mouseHandler).off(binds.touch[type], eventSpecial.touchHandler).off(binds.touch.down, eventSpecial.touchDownHandler).off(binds.mspointer[type], eventSpecial.msPointerHandler);
-            },
-            touchDownHandler: function(e) {
-                eventSpecial._processed = true;
-                eventSpecial._target = e.target;
-            },
-            touchHandler: function(e) {
+    function extendToOut(params) {
+        return $.extend(touchmoveBased(params), extendWithTargetFromPoint(params), {
+            touchMoveHandler: function(e) {
                 if (e.target !== e.currentTarget) {
                     return;
                 }
                 e.pointerType = 2;
-                var pointerevent = new PointerEvent(e, eventName), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY), target = eventSpecial._target;
-                $(targetFromPoint).trigger(pointerevent);
+                var pointerevent = new PointerEvent(e, params.name), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY), target = params.event._target;
                 if (target !== targetFromPoint) {
-                    pointerevent = new PointerEvent(e, "pointerout");
                     $(target).trigger(pointerevent);
-                    pointerevent = new PointerEvent(e, "pointerleave");
+                    params.event._target = targetFromPoint;
+                }
+            }
+        });
+    }
+    function extendToLeave(params) {
+        return $.extend(touchmoveBased(params), extendWithTargetFromPoint(params), {
+            touchMoveHandler: function(e) {
+                if (e.target !== e.currentTarget) {
+                    return;
+                }
+                e.pointerType = 2;
+                var pointerevent = new PointerEvent(e, params.name), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY), target = params.event._target;
+                if (target !== targetFromPoint) {
                     if (targetFromPoint.contains(target)) {
                         $(target).triggerHandler(pointerevent);
                     } else {
                         $(target).trigger(pointerevent);
                     }
-                    if (!targetFromPoint.contains(target)) {
-                        pointerevent = new PointerEvent(e, "pointerenter");
-                        $(targetFromPoint).trigger(pointerevent);
-                    }
-                    pointerevent = new PointerEvent(e, "pointerover");
-                    $(targetFromPoint).trigger(pointerevent);
-                    eventSpecial._target = targetFromPoint;
+                    params.event._target = targetFromPoint;
+                }
+            },
+            mouseHandler: function(e) {
+                if (e.target !== e.currentTarget) {
+                    return;
+                }
+                var pointerevent = new PointerEvent(e, params.name);
+                if (!e.relatedTarget) {
+                    $(e.target).trigger(pointerevent);
+                    return;
+                }
+                if (e.relatedTarget.contains(e.target)) {
+                    $(e.target).triggerHandler(pointerevent);
+                } else {
+                    $(e.target).trigger(pointerevent);
                 }
             }
-        };
+        });
     }
-    addPointerEvent("enter");
-    addPointerEvent("over");
+    function extendToMove(params) {
+        return $.extend(touchmoveBased(params), extendWithTargetFromPoint(params));
+    }
+    addPointerEvent("enter", extendToEnter);
+    addPointerEvent("over", extendToOver);
     addPointerEvent("down");
-    addPointerEvent("move", extendTouchMove);
-    addPointerEvent("up", extendTouchHandlerWithTarget);
-    addPointerEvent("out", extendTouchHandlerWithTarget);
-    addPointerEvent("leave", extendTouchHandlerWithTarget);
+    addPointerEvent("move", extendToMove);
+    addPointerEvent("up", extendWithTargetFromPoint);
+    addPointerEvent("out", extendToOut);
+    addPointerEvent("leave", extendToLeave);
     addPointerEvent("cancel");
-})(window, jQuery);
+});
