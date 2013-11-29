@@ -342,7 +342,8 @@
 
                 // new target
                 if(target !== targetFromPoint) {
-                    // fix simulated event target
+                    // fix simulated event targets
+                    pointerevent.relatedTarget = pointerevent.target;
                     pointerevent.target = pointerevent.targetFromPoint;
 
                     // inner target
@@ -421,8 +422,10 @@
 
                 // new target
                 if(target !== targetFromPoint) {
-                    // fix simulated event target
+                    // fix simulated event targets
+                    pointerevent.relatedTarget = pointerevent.target;
                     pointerevent.target = pointerevent.targetFromPoint;
+
                     $(targetFromPoint).trigger(pointerevent);
 
                     // targetFromPoint -> target
@@ -460,8 +463,10 @@
                         pointerevent.clientY
                     );
 
-                // fix simulated event target
+                // fix simulated event targets
+                pointerevent.relatedTarget = pointerevent.target;
                 pointerevent.target = pointerevent.targetFromPoint;
+
                 $(targetFromPoint).trigger(pointerevent);
             }
         };
