@@ -243,7 +243,7 @@
                 // mspointer
                 msHandler: function(e) {
                     // ignore all handler calls due to bubbling
-                    if(e.target !== e.currentTarget){ return; }
+                    if(e.target !== e.currentTarget) { return; }
 
                     // stop mouse events handling
                     eventSpecial._processed = true;
