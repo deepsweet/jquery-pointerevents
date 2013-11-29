@@ -362,21 +362,33 @@
                 // ignore all handler calls due to bubbling
                 if(e.target !== e.currentTarget) { return; }
 
-                var pointerevent = new PointerEvent(e, params.name);
+                // do not duplicate PointerEvent if
+                // touch/mspointer is already processed
+                if(params.event._processed === false) {
+                    e.pointerType = 4;
 
-                // no related target
-                if(!e.relatedTarget) {
-                    $(e.target).trigger(pointerevent);
-                    return;
+                    var pointerevent = new PointerEvent(e, params.name);
+
+                    // no related target
+                    if(!e.relatedTarget) {
+                        $(e.target).trigger(pointerevent);
+                        return;
+                    }
+
+                    // inner target
+                    if(e.relatedTarget.contains(e.target)) {
+                        $(e.target).triggerHandler(pointerevent);
+                    // truly new target
+                    } else if(!e.target.contains(e.relatedTarget)) {
+                        $(e.target).trigger(pointerevent);
+                    }
                 }
 
-                // inner target
-                if(e.relatedTarget.contains(e.target)) {
-                    $(e.target).triggerHandler(pointerevent);
-                // truly new target
-                } else if(!e.target.contains(e.relatedTarget)) {
-                    $(e.target).trigger(pointerevent);
-                }
+                // clear the "processed" key right after
+                // current event and all the bubblings
+                setTimeout(function() {
+                    params.event._processed = false;
+                }, 0);
             }
         });
 
@@ -543,19 +555,31 @@
                     // ignore all handler calls due to bubbling
                     if(e.target !== e.currentTarget) { return; }
 
-                    var pointerevent = new PointerEvent(e, params.name);
+                    // do not duplicate PointerEvent if
+                    // touch/mspointer is already processed
+                    if(params.event._processed === false) {
+                        e.pointerType = 4;
 
-                    if(!e.relatedTarget) {
-                        $(e.target).trigger(pointerevent);
-                        return;
+                        var pointerevent = new PointerEvent(e, params.name);
+
+                        if(!e.relatedTarget) {
+                            $(e.target).trigger(pointerevent);
+                            return;
+                        }
+
+                        if(e.relatedTarget.contains(e.target)) {
+                            $(e.target).triggerHandler(pointerevent);
+                        // leave!
+                        } else {
+                            $(e.target).trigger(pointerevent);
+                        }
                     }
 
-                    if(e.relatedTarget.contains(e.target)) {
-                        $(e.target).triggerHandler(pointerevent);
-                    // leave!
-                    } else {
-                        $(e.target).trigger(pointerevent);
-                    }
+                    // clear the "processed" key right after
+                    // current event and all the bubblings
+                    setTimeout(function() {
+                        params.event._processed = false;
+                    }, 0);
                 }
             }
         );
