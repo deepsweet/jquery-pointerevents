@@ -1,3 +1,8 @@
+### 0.5.1 / 29.11.2013
+* fix preventing mouse ghosts
+* fix simulated events real target
+* minor codestyle fix
+
 ### 0.5.0 / 28.11.2013
 * large code refactoring
 * isolate all the events from pointermove bind

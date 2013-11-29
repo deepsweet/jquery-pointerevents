@@ -1,5 +1,5 @@
 /*!
- * jQuery PointerEvents v0.5.0
+ * jQuery PointerEvents v0.5.1
  * https://github.com/deepsweet/jquery-pointerevents/
  * copyright 2013 Kir Belevich <kir@soulshine.in>
  */
@@ -175,6 +175,7 @@
                 e.pointerType = 2;
                 var pointerevent = new PointerEvent(e, params.name), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY), target = params.event._target;
                 if (target !== targetFromPoint) {
+                    pointerevent.target = pointerevent.targetFromPoint;
                     if (target.contains(targetFromPoint)) {
                         $(targetFromPoint).triggerHandler(pointerevent);
                     } else if (!targetFromPoint.contains(target)) {
@@ -187,16 +188,22 @@
                 if (e.target !== e.currentTarget) {
                     return;
                 }
-                var pointerevent = new PointerEvent(e, params.name);
-                if (!e.relatedTarget) {
-                    $(e.target).trigger(pointerevent);
-                    return;
+                if (params.event._processed === false) {
+                    e.pointerType = 4;
+                    var pointerevent = new PointerEvent(e, params.name);
+                    if (!e.relatedTarget) {
+                        $(e.target).trigger(pointerevent);
+                        return;
+                    }
+                    if (e.relatedTarget.contains(e.target)) {
+                        $(e.target).triggerHandler(pointerevent);
+                    } else if (!e.target.contains(e.relatedTarget)) {
+                        $(e.target).trigger(pointerevent);
+                    }
                 }
-                if (e.relatedTarget.contains(e.target)) {
-                    $(e.target).triggerHandler(pointerevent);
-                } else if (!e.target.contains(e.relatedTarget)) {
-                    $(e.target).trigger(pointerevent);
-                }
+                setTimeout(function() {
+                    params.event._processed = false;
+                }, 0);
             }
         });
     }
@@ -209,6 +216,7 @@
                 e.pointerType = 2;
                 var pointerevent = new PointerEvent(e, params.name), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY), target = params.event._target;
                 if (target !== targetFromPoint) {
+                    pointerevent.target = pointerevent.targetFromPoint;
                     $(targetFromPoint).trigger(pointerevent);
                     params.event._target = targetFromPoint;
                 }
@@ -224,6 +232,7 @@
                 params.event._processed = true;
                 e.pointerType = 2;
                 var pointerevent = new PointerEvent(e, params.name), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY);
+                pointerevent.target = pointerevent.targetFromPoint;
                 $(targetFromPoint).trigger(pointerevent);
             }
         };
@@ -264,16 +273,22 @@
                 if (e.target !== e.currentTarget) {
                     return;
                 }
-                var pointerevent = new PointerEvent(e, params.name);
-                if (!e.relatedTarget) {
-                    $(e.target).trigger(pointerevent);
-                    return;
+                if (params.event._processed === false) {
+                    e.pointerType = 4;
+                    var pointerevent = new PointerEvent(e, params.name);
+                    if (!e.relatedTarget) {
+                        $(e.target).trigger(pointerevent);
+                        return;
+                    }
+                    if (e.relatedTarget.contains(e.target)) {
+                        $(e.target).triggerHandler(pointerevent);
+                    } else {
+                        $(e.target).trigger(pointerevent);
+                    }
                 }
-                if (e.relatedTarget.contains(e.target)) {
-                    $(e.target).triggerHandler(pointerevent);
-                } else {
-                    $(e.target).trigger(pointerevent);
-                }
+                setTimeout(function() {
+                    params.event._processed = false;
+                }, 0);
             }
         });
     }
