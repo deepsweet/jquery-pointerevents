@@ -342,6 +342,9 @@
 
                 // new target
                 if(target !== targetFromPoint) {
+                    // fix simulated event target
+                    pointerevent.target = pointerevent.targetFromPoint;
+
                     // inner target
                     if(target.contains(targetFromPoint)) {
                         $(targetFromPoint).triggerHandler(pointerevent);
@@ -406,6 +409,8 @@
 
                 // new target
                 if(target !== targetFromPoint) {
+                    // fix simulated event target
+                    pointerevent.target = pointerevent.targetFromPoint;
                     $(targetFromPoint).trigger(pointerevent);
 
                     // targetFromPoint -> target
@@ -443,6 +448,8 @@
                         pointerevent.clientY
                     );
 
+                // fix simulated event target
+                pointerevent.target = pointerevent.targetFromPoint;
                 $(targetFromPoint).trigger(pointerevent);
             }
         };
