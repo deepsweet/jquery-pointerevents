@@ -1,4 +1,5 @@
-## jQuery PointerEvents v0.5.1 [![Build Status](https://secure.travis-ci.org/deepsweet/jquery-pointerevents.png)](https://travis-ci.org/deepsweet/jquery-pointerevents)
+## jQuery PointerEvents v0.5.1
+[![Build Status](https://secure.travis-ci.org/deepsweet/jquery-pointerevents.png)](https://travis-ci.org/deepsweet/jquery-pointerevents) [![Maintainability](http://platojs.nodejitsu.com/deepsweet/jquery-pointerevents/master/maintainability.png)](http://platojs.nodejitsu.com/deepsweet/jquery-pointerevents/master/) [![license MIT](http://b.repl.ca/v1/license-MIT-brightgreen.png)](https://github.com/deepsweet/poncho/blob/master/LICENSE)
 
 Basic polyfill for [Pointer Events W3C Specitication](https://dvcs.w3.org/hg/pointerevents/raw-file/tip/pointerEvents.html) using [jQuery special events API](http://www.benalman.com/news/2010/03/jquery-special-events/).
 
