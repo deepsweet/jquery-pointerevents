@@ -4,7 +4,7 @@
  * @author Kir Belevich <kir@soulshine.in>
  * @copyright Kir Belevich 2013
  * @license MIT
- * @version 0.5.2
+ * @version 0.5.1
  */
  (function(factory) {
 
@@ -450,22 +450,7 @@
                 pointerevent.relatedTarget = pointerevent.target;
                 pointerevent.target = pointerevent.targetFromPoint;
 
-                if(!params.event._noDuplicates) {
-                    // stop mouse events handling
-                    // eventSpecial._noMouse = true;
-                    params.event._noDuplicates = true;
-
-                    // e.pointerType = 2;
-                    // pointerevent = new PointerEvent(e, eventName);
-
-                    $(targetFromPoint).trigger(pointerevent);
-                }
-
-                nextTick(function() {
-                    params.event._noDuplicates = false;
-                });
-
-                // $(targetFromPoint).trigger(pointerevent);
+                $(targetFromPoint).triggerHandler(pointerevent);
             }
         };
 
