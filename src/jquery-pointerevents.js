@@ -176,6 +176,43 @@
     }
 
     /**
+     * Simple nextTick polyfill.
+     *
+     * @see http://jsperf.com/settimeout-vs-nexttick-polyfill
+     *
+     * @return {Function}
+     */
+    function nextTick(callback) {
+
+        var msgName = 'nextTick-polyfill',
+            timeouts = [];
+
+        if(win.nextTick) {
+            return win.nextTick(callback);
+        }
+
+        if(!win.postMessage || win.ActiveXObject) {
+            return setTimeout(callback, 0);
+        }
+
+        win.addEventListener('message', function(e){
+            if(e.source === win && e.data === msgName) {
+                if(e.stopPropagation) {
+                    e.stopPropagation();
+                }
+
+                if(timeouts.length) {
+                    timeouts.shift()();
+                }
+            }
+        }, false);
+
+        timeouts.push(callback);
+        win.postMessage(msgName, '*');
+
+    }
+
+    /**
      * Create new $.event.special wrapper with some default behavior.
      *
      * @param {string} type event type
@@ -187,9 +224,6 @@
             pointerevent,
 
             eventSpecial = $.event.special[eventName] = {
-                // touch/mspointer event is already in the process
-                _processed: false,
-
                 // bind
                 setup: function() {
                     $(this)
@@ -208,45 +242,36 @@
 
                 // mouse
                 mouseHandler: function(e) {
-                    // ignore all handler calls due to bubbling
-                    if(e.target !== e.currentTarget) { return; }
-
                     // do not duplicate PointerEvent if
                     // touch/mspointer is already processed
-                    if(eventSpecial._processed === false) {
+                    if(!eventSpecial._noMouse) {
                         e.pointerType = 4;
                         pointerevent = new PointerEvent(e, eventName);
-                        $(e.target).trigger(pointerevent);
+                        $(e.currentTarget).triggerHandler(pointerevent);
                     }
 
                     // clear the "processed" key right after
                     // current event and all the bubblings
-                    setTimeout(function() {
-                        eventSpecial._processed = false;
-                    }, 0);
+                    nextTick(function() {
+                        eventSpecial._noMouse = false;
+                    });
                 },
 
                 // touch
                 touchHandler: function(e) {
-                    // ignore all handler calls due to bubbling
-                    if(e.target !== e.currentTarget) { return; }
-
                     // stop mouse events handling
-                    eventSpecial._processed = true;
+                    eventSpecial._noMouse = true;
 
                     e.pointerType = 2;
                     pointerevent = new PointerEvent(e, eventName);
 
-                    $(e.target).trigger(pointerevent);
+                    $(e.currentTarget).triggerHandler(pointerevent);
                 },
 
                 // mspointer
                 msHandler: function(e) {
-                    // ignore all handler calls due to bubbling
-                    if(e.target !== e.currentTarget) { return; }
-
                     // stop mouse events handling
-                    eventSpecial._processed = true;
+                    eventSpecial._noMouse = true;
 
                     pointerevent = new PointerEvent(e, eventName);
                     $(e.target).trigger(pointerevent);
@@ -307,7 +332,7 @@
 
             touchDownHandler: function(e) {
                 // stop mouse events handling
-                event._processed = true;
+                event._noMouse = true;
                 // save initial target
                 event._target = e.target;
             }
@@ -328,9 +353,6 @@
 
         return $.extend(touchmoveBased(params), {
             touchMoveHandler: function(e) {
-                // ignore all handler calls due to bubbling
-                if(e.target !== e.currentTarget) { return; }
-
                 e.pointerType = 2;
 
                 var pointerevent = new PointerEvent(e, params.name),
@@ -357,39 +379,6 @@
                     // targetFromPoint -> target
                     params.event._target = targetFromPoint;
                 }
-            },
-
-            mouseHandler: function(e) {
-                // ignore all handler calls due to bubbling
-                if(e.target !== e.currentTarget) { return; }
-
-                // do not duplicate PointerEvent if
-                // touch/mspointer is already processed
-                if(params.event._processed === false) {
-                    e.pointerType = 4;
-
-                    var pointerevent = new PointerEvent(e, params.name);
-
-                    // no related target
-                    if(!e.relatedTarget) {
-                        $(e.target).trigger(pointerevent);
-                        return;
-                    }
-
-                    // inner target
-                    if(e.relatedTarget.contains(e.target)) {
-                        $(e.target).triggerHandler(pointerevent);
-                    // truly new target
-                    } else if(!e.target.contains(e.relatedTarget)) {
-                        $(e.target).trigger(pointerevent);
-                    }
-                }
-
-                // clear the "processed" key right after
-                // current event and all the bubblings
-                setTimeout(function() {
-                    params.event._processed = false;
-                }, 0);
             }
         });
 
@@ -408,9 +397,6 @@
 
         return $.extend(touchmoveBased(params), {
             touchMoveHandler: function(e) {
-                // ignore all handler calls due to bubbling
-                if(e.target !== e.currentTarget) { return; }
-
                 e.pointerType = 2;
 
                 var pointerevent = new PointerEvent(e, params.name),
@@ -449,11 +435,8 @@
 
         return {
             touchHandler: function(e) {
-                // ignore all handler calls due to bubbling
-                if(e.target !== e.currentTarget) { return; }
-
                 // stop mouse events handling
-                params.event._processed = true;
+                params.event._noMouse = true;
 
                 e.pointerType = 2;
 
@@ -467,7 +450,22 @@
                 pointerevent.relatedTarget = pointerevent.target;
                 pointerevent.target = pointerevent.targetFromPoint;
 
-                $(targetFromPoint).trigger(pointerevent);
+                if(!params.event._noDuplicates) {
+                    // stop mouse events handling
+                    // eventSpecial._noMouse = true;
+                    params.event._noDuplicates = true;
+
+                    // e.pointerType = 2;
+                    // pointerevent = new PointerEvent(e, eventName);
+
+                    $(targetFromPoint).trigger(pointerevent);
+                }
+
+                nextTick(function() {
+                    params.event._noDuplicates = false;
+                });
+
+                // $(targetFromPoint).trigger(pointerevent);
             }
         };
 
@@ -489,9 +487,6 @@
             extendWithTargetFromPoint(params),
             {
                 touchMoveHandler: function(e) {
-                    // ignore all handler calls due to bubbling
-                    if(e.target !== e.currentTarget) { return; }
-
                     e.pointerType = 2;
 
                     var pointerevent = new PointerEvent(e, params.name),
@@ -530,9 +525,6 @@
             extendWithTargetFromPoint(params),
             {
                 touchMoveHandler: function(e) {
-                    // ignore all handler calls due to bubbling
-                    if(e.target !== e.currentTarget) { return; }
-
                     e.pointerType = 2;
 
                     var pointerevent = new PointerEvent(e, params.name),
@@ -546,45 +538,13 @@
                     if(target !== targetFromPoint) {
                         if(targetFromPoint.contains(target)) {
                             $(target).triggerHandler(pointerevent);
-                        // leave!
                         } else {
-                            $(target).trigger(pointerevent);
+                            $(e.currentTarget).triggerHandler(pointerevent);
                         }
 
                         // targetFromPoint -> target
                         params.event._target = targetFromPoint;
                     }
-                },
-
-                mouseHandler: function(e) {
-                    // ignore all handler calls due to bubbling
-                    if(e.target !== e.currentTarget) { return; }
-
-                    // do not duplicate PointerEvent if
-                    // touch/mspointer is already processed
-                    if(params.event._processed === false) {
-                        e.pointerType = 4;
-
-                        var pointerevent = new PointerEvent(e, params.name);
-
-                        if(!e.relatedTarget) {
-                            $(e.target).trigger(pointerevent);
-                            return;
-                        }
-
-                        if(e.relatedTarget.contains(e.target)) {
-                            $(e.target).triggerHandler(pointerevent);
-                        // leave!
-                        } else {
-                            $(e.target).trigger(pointerevent);
-                        }
-                    }
-
-                    // clear the "processed" key right after
-                    // current event and all the bubblings
-                    setTimeout(function() {
-                        params.event._processed = false;
-                    }, 0);
                 }
             }
         );
