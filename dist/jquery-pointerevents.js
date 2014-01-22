@@ -1,5 +1,5 @@
 /*!
- * jQuery PointerEvents v0.5.1
+ * jQuery PointerEvents v0.5.2
  * https://github.com/deepsweet/jquery-pointerevents/
  * copyright 2013 Kir Belevich <kir@soulshine.in>
  */
@@ -97,9 +97,29 @@
     if (win.navigator.pointerEnabled) {
         return;
     }
+    function nextTick(callback) {
+        var msgName = "nextTick-polyfill", timeouts = [];
+        if (win.nextTick) {
+            return win.nextTick(callback);
+        }
+        if (!win.postMessage || win.ActiveXObject) {
+            return setTimeout(callback, 0);
+        }
+        win.addEventListener("message", function(e) {
+            if (e.source === win && e.data === msgName) {
+                if (e.stopPropagation) {
+                    e.stopPropagation();
+                }
+                if (timeouts.length) {
+                    timeouts.shift()();
+                }
+            }
+        }, false);
+        timeouts.push(callback);
+        win.postMessage(msgName, "*");
+    }
     function addPointerEvent(type, toExtend) {
         var eventName = "pointer" + type, pointerevent, eventSpecial = $.event.special[eventName] = {
-            _processed: false,
             setup: function() {
                 $(this).on(binds.mouse[type], eventSpecial.mouseHandler).on(binds.touch[type], eventSpecial.touchHandler).on(binds.mspointer[type], eventSpecial.msHandler);
             },
@@ -107,32 +127,23 @@
                 $(this).off(binds.mouse[type], eventSpecial.mouseHandler).off(binds.touch[type], eventSpecial.touchHandler).off(binds.mspointer[type], eventSpecial.msHandler);
             },
             mouseHandler: function(e) {
-                if (e.target !== e.currentTarget) {
-                    return;
-                }
-                if (eventSpecial._processed === false) {
+                if (!eventSpecial._noMouse) {
                     e.pointerType = 4;
                     pointerevent = new PointerEvent(e, eventName);
-                    $(e.target).trigger(pointerevent);
+                    $(e.currentTarget).triggerHandler(pointerevent);
                 }
-                setTimeout(function() {
-                    eventSpecial._processed = false;
-                }, 0);
+                nextTick(function() {
+                    eventSpecial._noMouse = false;
+                });
             },
             touchHandler: function(e) {
-                if (e.target !== e.currentTarget) {
-                    return;
-                }
-                eventSpecial._processed = true;
+                eventSpecial._noMouse = true;
                 e.pointerType = 2;
                 pointerevent = new PointerEvent(e, eventName);
-                $(e.target).trigger(pointerevent);
+                $(e.currentTarget).triggerHandler(pointerevent);
             },
             msHandler: function(e) {
-                if (e.target !== e.currentTarget) {
-                    return;
-                }
-                eventSpecial._processed = true;
+                eventSpecial._noMouse = true;
                 pointerevent = new PointerEvent(e, eventName);
                 $(e.target).trigger(pointerevent);
             }
@@ -161,7 +172,7 @@
                 }
             },
             touchDownHandler: function(e) {
-                event._processed = true;
+                event._noMouse = true;
                 event._target = e.target;
             }
         };
@@ -169,12 +180,10 @@
     function extendToEnter(params) {
         return $.extend(touchmoveBased(params), {
             touchMoveHandler: function(e) {
-                if (e.target !== e.currentTarget) {
-                    return;
-                }
                 e.pointerType = 2;
                 var pointerevent = new PointerEvent(e, params.name), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY), target = params.event._target;
                 if (target !== targetFromPoint) {
+                    pointerevent.relatedTarget = pointerevent.target;
                     pointerevent.target = pointerevent.targetFromPoint;
                     if (target.contains(targetFromPoint)) {
                         $(targetFromPoint).triggerHandler(pointerevent);
@@ -183,39 +192,16 @@
                     }
                     params.event._target = targetFromPoint;
                 }
-            },
-            mouseHandler: function(e) {
-                if (e.target !== e.currentTarget) {
-                    return;
-                }
-                if (params.event._processed === false) {
-                    e.pointerType = 4;
-                    var pointerevent = new PointerEvent(e, params.name);
-                    if (!e.relatedTarget) {
-                        $(e.target).trigger(pointerevent);
-                        return;
-                    }
-                    if (e.relatedTarget.contains(e.target)) {
-                        $(e.target).triggerHandler(pointerevent);
-                    } else if (!e.target.contains(e.relatedTarget)) {
-                        $(e.target).trigger(pointerevent);
-                    }
-                }
-                setTimeout(function() {
-                    params.event._processed = false;
-                }, 0);
             }
         });
     }
     function extendToOver(params) {
         return $.extend(touchmoveBased(params), {
             touchMoveHandler: function(e) {
-                if (e.target !== e.currentTarget) {
-                    return;
-                }
                 e.pointerType = 2;
                 var pointerevent = new PointerEvent(e, params.name), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY), target = params.event._target;
                 if (target !== targetFromPoint) {
+                    pointerevent.relatedTarget = pointerevent.target;
                     pointerevent.target = pointerevent.targetFromPoint;
                     $(targetFromPoint).trigger(pointerevent);
                     params.event._target = targetFromPoint;
@@ -226,23 +212,24 @@
     function extendWithTargetFromPoint(params) {
         return {
             touchHandler: function(e) {
-                if (e.target !== e.currentTarget) {
-                    return;
-                }
-                params.event._processed = true;
+                params.event._noMouse = true;
                 e.pointerType = 2;
                 var pointerevent = new PointerEvent(e, params.name), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY);
+                pointerevent.relatedTarget = pointerevent.target;
                 pointerevent.target = pointerevent.targetFromPoint;
-                $(targetFromPoint).trigger(pointerevent);
+                if (!params.event._noDuplicates) {
+                    params.event._noDuplicates = true;
+                    $(targetFromPoint).trigger(pointerevent);
+                }
+                nextTick(function() {
+                    params.event._noDuplicates = false;
+                });
             }
         };
     }
     function extendToOut(params) {
         return $.extend(touchmoveBased(params), extendWithTargetFromPoint(params), {
             touchMoveHandler: function(e) {
-                if (e.target !== e.currentTarget) {
-                    return;
-                }
                 e.pointerType = 2;
                 var pointerevent = new PointerEvent(e, params.name), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY), target = params.event._target;
                 if (target !== targetFromPoint) {
@@ -255,40 +242,16 @@
     function extendToLeave(params) {
         return $.extend(touchmoveBased(params), extendWithTargetFromPoint(params), {
             touchMoveHandler: function(e) {
-                if (e.target !== e.currentTarget) {
-                    return;
-                }
                 e.pointerType = 2;
                 var pointerevent = new PointerEvent(e, params.name), targetFromPoint = doc.elementFromPoint(pointerevent.clientX, pointerevent.clientY), target = params.event._target;
                 if (target !== targetFromPoint) {
                     if (targetFromPoint.contains(target)) {
                         $(target).triggerHandler(pointerevent);
                     } else {
-                        $(target).trigger(pointerevent);
+                        $(e.currentTarget).triggerHandler(pointerevent);
                     }
                     params.event._target = targetFromPoint;
                 }
-            },
-            mouseHandler: function(e) {
-                if (e.target !== e.currentTarget) {
-                    return;
-                }
-                if (params.event._processed === false) {
-                    e.pointerType = 4;
-                    var pointerevent = new PointerEvent(e, params.name);
-                    if (!e.relatedTarget) {
-                        $(e.target).trigger(pointerevent);
-                        return;
-                    }
-                    if (e.relatedTarget.contains(e.target)) {
-                        $(e.target).triggerHandler(pointerevent);
-                    } else {
-                        $(e.target).trigger(pointerevent);
-                    }
-                }
-                setTimeout(function() {
-                    params.event._processed = false;
-                }, 0);
             }
         });
     }
