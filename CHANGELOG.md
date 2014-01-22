@@ -1,3 +1,8 @@
+### 0.5.2 / 22.01.2014
+* fix simulated events relatedTarget
+* fix events bubbling
+* update `README` and `.gitignore`
+
 ### 0.5.1 / 29.11.2013
 * fix preventing mouse ghosts
 * fix simulated events real target

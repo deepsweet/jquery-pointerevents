@@ -5,10 +5,10 @@
 
     <style>
         body { -webkit-user-select: none; -ms-touch-action: none }
-        .test { border: 2px solid #000 }
+        .test, .test_ { border: 2px solid #000 }
         #id1 { width: 150px; height: 150px; float: left }
         #id2 { width: 150px; height: 150px; margin-left: 150px }
-        #id3 { width: 100px; height: 100px }
+        #id3 { width: 100px; height: 128px }
         #id4 { width: 50px; height: 50px }
     </style>
 </head>
@@ -21,7 +21,7 @@
         2
         <div class="test" id="id3">
             3
-            <div class="test" id="id4">
+            <div class="test_" id="id4">
                 4
             </div>
         </div>
@@ -33,6 +33,7 @@
         (function($) {
 
             function log(e, ctx) {
+                if(e.type === 'pointermove') return;
                 console.log(ctx.id + ': ' + e.type);
             }
 

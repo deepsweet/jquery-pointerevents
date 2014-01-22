@@ -1,6 +1,6 @@
 {
   "name": "jquery-pointerevents",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Basic polyfill for Pointer Events W3C Specification",
   "keywords": [ "jquery", "pointerevents", "polyfill" ],
   "authors": [ "Kir Belevich <kir@soulshine.in> (https://github.com/deepsweet)" ],
